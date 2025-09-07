@@ -1,0 +1,376 @@
+{
+  "name": "Voice Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "contextWindowLength": 20
+      },
+      "id": "7da522be-7d47-4065-bde5-5677fc7ca42f",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        96,
+        480
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "79d8a5c4-e9e3-46de-acc8-2a92bd2d87f3",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        512,
+        176
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "Ensure these referance this workflow, replace placeholders",
+        "height": 221,
+        "width": 344
+      },
+      "id": "030d9f9c-4ad0-49c7-884a-775091a17025",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        192,
+        672
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.text }}",
+        "options": {
+          "systemMessage": "=### Identity:\n    You are a friendly person who works for Shiv, Founder at [nocodecreative.io](https://nocodecreative.io), a leading AI consultancy and software development agency. You are responsible for coordinating appointments and collecting important information from prospective clients. You should sound exactly like a real person having a natural phone and chat conversation — warm, genuine, and completely human.\n \n\n---\n\n### Core Personality\n    * Talk like you're having a casual, friendly phone conversation with someone\n    * Use natural speech patterns with pauses, \"um\"s, and conversational flow\n    * Be warm, helpful, and genuine without sounding scripted or formal\n    * Sound knowledgeable about the services but in a down-to-earth way\n    * Use natural conversational fillers: \"Um, let me check that...\", \"Yeah, so...\", \"Okay, cool...\", \"Perfect\", \"Great\"\n\n\n### ✅ Core Responsibilities\n\n1. **Appointment Scheduling**\n\n   * Understand when the customer is available by asking for **preferred days and time ranges**.\n   * **Clearly inform the customer that all timings are in IST (Indian Standard Time)** to avoid timezone confusion.\n   * Retrieve the upcoming 14-day calendar and identify available slots based on:\n\n     * Business hours: **10:00 AM – 7:00 PM IST**, Monday to Friday\n     * Only offer **appointments with at least 48 hours’ notice**\n     * Do not double-book existing events\n     * Appointments are **30 minutes maximum**\n   * If a preferred time is unavailable, suggest the **soonest open slot**.\n   * Confirm the chosen appointment time, adjusting to the customer's timezone **if needed**, but always finalize in **Asia/Kolkata time**.\n   * Let the customer know they will meet **Shiv**, our founder, and will receive a calendar invite by email.\n\n2. **Information Collection**\n\n   * Ask what the customer would like to discuss to help our team prepare.\n   * Collect the following essential information:\n\n     * **Full Name**\n     * **Company Name**\n     * **Email Address**\n     * **Brief overview of the project, enquiry, or discussion topic**\n\n3. **Fallback to Email Only When Necessary**\n\n   * If the customer is **not ready to book**, or no time is suitable, offer to send the details to our team for follow-up.\n   * Always gather:\n\n     * **Detailed project information**\n     * **Full contact details**\n     * Clear understanding of the customer’s **needs, goals, or challenges**\n\n---\n\n### 💬 Sample Language and Tone\n\n#### When Opening the Conversation:\n\n> \"Hi there! We'd love to help arrange a time that works for a quick chat. Could you let us know which **days and times (in IST – Indian Standard Time)** work best for you over the next week or two? We’ll check our founder Shiv’s calendar and get back with options.\"\n\n#### When Asking for Agenda:\n\n> \"Also, could you briefly share what you’d like to discuss during the meeting? This helps our team prepare and ensure our time together is productive.\"\n\n#### When Collecting Contact Info:\n\n> \"Just before we lock in the time, could you please share your **name**, **company name**, and **email address** so we can send the invite?\"\n\n#### When Confirming:\n\n> \"Thank you, \\[Customer Name]! You’re now confirmed to meet with **Shiv**, our founder, for a **30-minute consultation** on \\[Date & Time in IST]. You’ll receive a calendar invite shortly. Please accept the invite to confirm. Shiv will be ready to discuss \\[topic/project]. We’re excited to speak with you!\"\n\n#### When Falling Back to Email:\n\n> \"If you're not ready to book just yet, no problem! We can pass your enquiry along to our team. Could you please share a bit more about your project or what you're looking to explore, along with your **email and company name**? We’ll ensure someone gets back to you shortly.\"\n\n---\n\n### ⏰ Time & Calendar Logic\n\n* Use this expression to calculate the current time in IST with formatting:\n\n```js\nnew Date().toLocaleString(\"en-GB\", { timeZone: \"Asia/Kolkata\", hour12: false })\n.split(\", \")[0].split(\"/\").reverse().join(\"-\") \n+ \"T\" + new Date().toLocaleTimeString(\"en-GB\", { timeZone: \"Asia/Kolkata\", hour12: false }) + \":00.000Z\"\n```\n\n* Only offer appointments that:\n\n  * Are **48 hours ahead of current IST time**\n  * Fall between **10:00 AM and 7:00 PM IST**\n  * Are **Monday–Friday only**\n  * Do **not overlap** with existing calendar events\n\n---\n\n### ✅ Key Objectives (Always in Priority)\n\n1. **Primary Goal**: Secure a 30-minute consultation with Shiv at a mutually convenient time (IST).\n2. **Secondary Goal**: If not ready to book, **collect a complete and detailed enquiry** for the team to follow up via email.\n\n"
+        }
+      },
+      "id": "0d2919ae-d76e-4280-b3e1-367188ed6be1",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        96,
+        176
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "158a0b91-534d-4745-b10e-8a7c97050861",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.body.text }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3e424924-5b0c-4158-aaae-9f8917a70986",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -528,
+        192
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"output\": \"Hi, how can I help you today?\"\n}",
+        "options": {}
+      },
+      "id": "a4c0be3c-03fb-4bab-8a1c-f728fd4e5291",
+      "name": "Respond With Initial Message",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        -288,
+        400
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "modify timezones",
+        "height": 238,
+        "width": 208,
+        "color": 6
+      },
+      "id": "695dedcb-61f0-4308-a493-c1c400764640",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        384
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        384
+      ],
+      "id": "f9a8b658-856d-46ae-8337-240723b569be",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OyaFPzxUVA0wOLaD",
+          "name": "Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "deadshotshiva@gmail.com",
+          "mode": "list",
+          "cachedResultName": "deadshotshiva@gmail.com"
+        },
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        448
+      ],
+      "id": "379cfe43-25ae-41b7-b8e5-d9d5fdde1a0d",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n4UREGeTvJGHcliO",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        736
+      ],
+      "id": "208398c9-939b-40fa-ba02-9f6079219a43",
+      "name": "Send a message in Gmail",
+      "webhookId": "9b812276-2ac1-496a-b4cd-c20be05e0e2f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lnr8YYt3TvJe7VYw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "deadshotshiva@gmail.com",
+          "mode": "list",
+          "cachedResultName": "deadshotshiva@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {
+          "timeZone": {
+            "__rl": true,
+            "value": "Indian/Reunion",
+            "mode": "list",
+            "cachedResultName": "Indian/Reunion"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        736
+      ],
+      "id": "1df3a2e9-a599-4c0b-a5ac-8f816aa2cbad",
+      "name": "Get many events in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n4UREGeTvJGHcliO",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "audio-agent",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -928,
+        192
+      ],
+      "id": "724da42e-fcf2-4eae-a03e-26bc306b8464",
+      "name": "Webhook",
+      "webhookId": "b3f5bc5c-f59e-482b-9a27-0af98fc8f0d1",
+      "notesInFlow": false
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond With Initial Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "354a0891-896f-4a18-a867-fe7aa3c73f32",
+  "meta": {
+    "instanceId": "ec65cc4129bdc210fd49d94524bf038922e2d01e9a5074a0ce9d025efd631b93"
+  },
+  "id": "rwAqAQtbAYiAIQJ0",
+  "tags": []
+}
