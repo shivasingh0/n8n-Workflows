@@ -1,0 +1,483 @@
+{
+  "name": "Voice Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.body.sessionId }}",
+        "contextWindowLength": 20
+      },
+      "id": "7da522be-7d47-4065-bde5-5677fc7ca42f",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "position": [
+        96,
+        480
+      ],
+      "typeVersion": 1.2
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "79d8a5c4-e9e3-46de-acc8-2a92bd2d87f3",
+      "name": "Respond to Webhook",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        512,
+        176
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "Ensure these referance this workflow, replace placeholders",
+        "height": 221,
+        "width": 344
+      },
+      "id": "030d9f9c-4ad0-49c7-884a-775091a17025",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        192,
+        672
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.text }}",
+        "options": {
+          "systemMessage": "=You are a friendly personal assistant helping patients schedule appointments with **Dr. Tarun**.\n\nYour tone is warm, genuine, and conversational — just like a real person talking on the phone or via chat. Use natural expressions like “Um, let me check that…”, “Yeah, so…”, “Okay, great…” and keep things simple and helpful.\n\n---\n\n### 🩺 Main Goal:\n\n1. **Primary Goal**: Schedule a 30-minute consultation with Dr. Tarun at a mutually convenient time (in IST – Indian Standard Time).\n2. **Secondary Goal**: If the patient is not ready to book, collect full contact details and inquiry so the team can follow up by email or phone.\n\n---\n\n### ⏰ Time & Calendar Rules\n\nWhen offering appointment slots, follow these rules:\n\n* Appointments can only be between **10:00 AM and 7:00 PM IST**, Monday to Friday.\n* Appointments must be scheduled with **at least 48 hours’ notice** from now.\n* Each appointment lasts **maximum 30 minutes**.\n* Don’t suggest slots that overlap existing appointments.\n* Always display appointment times in **Asia/Kolkata time (IST)**.\n\nUse this formula to calculate current IST date-time:\n\n```js\nnew Date().toLocaleString(\"en-GB\", { timeZone: \"Asia/Kolkata\", hour12: false })\n.split(\", \")[0].split(\"/\").reverse().join(\"-\") \n+ \"T\" + new Date().toLocaleTimeString(\"en-GB\", { timeZone: \"Asia/Kolkata\", hour12: false }) + \":00.000Z\"\n```\n\n---\n\n### 💬 Conversation Flow\n\n#### 1️⃣ Opening Message:\n\n> “Hi there! I’m Dr. Tarun’s personal assistant. We’d love to help you schedule a consultation with **Dr. Tarun**.\n> Could you please let me know which **days and time ranges (in IST – Indian Standard Time)** over the next week or two work best for you? I’ll check Dr. Tarun’s calendar and get back to you with available slots.”\n\n#### 2️⃣ Ask for Appointment Purpose:\n\n> “Also, can you briefly share what you’d like to discuss during your appointment? This helps Dr. Tarun prepare in advance to assist you better.”\n\n#### 3️⃣ Collect Contact Information:\n\n> “Great! Just before I lock in the appointment, may I please get your:\n> • **Full Name**\n> • **Phone Number**\n> • **Email Address**\n> so we can send you the appointment confirmation.”\n\n#### 4️⃣ Confirming the Appointment:\n\n> “Perfect, \\[Patient Name]!\n> Your appointment with **Dr. Tarun** is now confirmed for **\\[Date & Time in IST]**.\n> You’ll receive a calendar invite or confirmation message via email shortly.\n> Please make sure to accept the invite.\n> Dr. Tarun will be ready to discuss your \\[brief reason].\n> We look forward to seeing you and helping you!”\n\n#### 5️⃣ Fallback When Not Ready to Book:\n\n> “No worries at all if you’re not ready to schedule an appointment right now.\n> I can take a bit more information about your concern along with your contact details, and our team will follow up with you shortly.\n> Could you please share:\n> • A brief description of your concern\n> • Your **full name**, **phone number**, and **email address**?”\n\n---\n\n### ✅ Example Final Confirmation Message\n\n> “Thank you, Rajesh!\n> You’re now confirmed to meet with **Dr. Tarun** for a **30-minute consultation** on **Tuesday, 24th Sep, 11:30 AM IST**.\n> You’ll receive a calendar invite shortly. Please accept it to confirm.\n> Dr. Tarun will be ready to help you with your \\[general checkup / specific concern].\n> We’re excited to see you!”\n\n---\n\n### ✅ If Patient Shares Only Inquiry (Without Booking):\n\nCollect the following:\n\n* Full Name\n* Phone Number\n* Email Address\n* Detailed description of the concern\n\nThen respond:\n\n> “Thanks for sharing the details, \\[Patient Name].\n> Our team will get back to you shortly to help you further.\n> If you decide to schedule an appointment later, just let us know anytime!”\n\n"
+        }
+      },
+      "id": "0d2919ae-d76e-4280-b3e1-367188ed6be1",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "position": [
+        96,
+        176
+      ],
+      "typeVersion": 1.6
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "158a0b91-534d-4745-b10e-8a7c97050861",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.body.text }}",
+              "rightValue": ""
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3e424924-5b0c-4158-aaae-9f8917a70986",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "position": [
+        -528,
+        192
+      ],
+      "typeVersion": 2.2
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "{\n  \"output\": \"Hi, how can I help you today?\"\n}",
+        "options": {}
+      },
+      "id": "a4c0be3c-03fb-4bab-8a1c-f728fd4e5291",
+      "name": "Respond With Initial Message",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "position": [
+        -288,
+        400
+      ],
+      "typeVersion": 1.1
+    },
+    {
+      "parameters": {
+        "content": "modify timezones",
+        "height": 238,
+        "width": 208,
+        "color": 6
+      },
+      "id": "695dedcb-61f0-4308-a493-c1c400764640",
+      "name": "Sticky Note4",
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        528,
+        384
+      ],
+      "typeVersion": 1
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -32,
+        384
+      ],
+      "id": "f9a8b658-856d-46ae-8337-240723b569be",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "OyaFPzxUVA0wOLaD",
+          "name": "Gemini"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "deadshotshiva@gmail.com",
+          "mode": "list",
+          "cachedResultName": "deadshotshiva@gmail.com"
+        },
+        "additionalFields": {
+          "attendees": [
+            "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('attendees0_Attendees', ``, 'string') }}"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        576,
+        448
+      ],
+      "id": "379cfe43-25ae-41b7-b8e5-d9d5fdde1a0d",
+      "name": "Create an event in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n4UREGeTvJGHcliO",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('To', ``, 'string') }}",
+        "subject": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Subject', ``, 'string') }}",
+        "emailType": "text",
+        "message": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Message', ``, 'string') }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.gmailTool",
+      "typeVersion": 2.1,
+      "position": [
+        400,
+        736
+      ],
+      "id": "208398c9-939b-40fa-ba02-9f6079219a43",
+      "name": "Send a message in Gmail",
+      "webhookId": "9b812276-2ac1-496a-b4cd-c20be05e0e2f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "lnr8YYt3TvJe7VYw",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "deadshotshiva@gmail.com",
+          "mode": "list",
+          "cachedResultName": "deadshotshiva@gmail.com"
+        },
+        "timeMin": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('After', ``, 'string') }}",
+        "timeMax": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Before', ``, 'string') }}",
+        "options": {
+          "timeZone": {
+            "__rl": true,
+            "value": "Indian/Reunion",
+            "mode": "list",
+            "cachedResultName": "Indian/Reunion"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        736
+      ],
+      "id": "1df3a2e9-a599-4c0b-a5ac-8f816aa2cbad",
+      "name": "Get many events in Google Calendar",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "n4UREGeTvJGHcliO",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "audio-agent",
+        "responseMode": "responseNode",
+        "options": {
+          "allowedOrigins": "*"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -928,
+        192
+      ],
+      "id": "724da42e-fcf2-4eae-a03e-26bc306b8464",
+      "name": "Webhook",
+      "webhookId": "b3f5bc5c-f59e-482b-9a27-0af98fc8f0d1",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1qS9G5kPRPEp6Zp4wXNF4wGAgQUE1JqX2aDNKlz1tS1I",
+          "mode": "list",
+          "cachedResultName": "Clients",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qS9G5kPRPEp6Zp4wXNF4wGAgQUE1JqX2aDNKlz1tS1I/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sheet1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1qS9G5kPRPEp6Zp4wXNF4wGAgQUE1JqX2aDNKlz1tS1I/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Name": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Name', ``, 'string') }}",
+            "Email": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Email', ``, 'string') }}",
+            "Schedule DateTime": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Schedule_DateTime', ``, 'string') }}",
+            "Purpose": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Purpose', ``, 'string') }}",
+            "Phone Number": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Phone_Number', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Name",
+              "displayName": "Name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Schedule DateTime",
+              "displayName": "Schedule DateTime",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Phone Number",
+              "displayName": "Phone Number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Purpose",
+              "displayName": "Purpose",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        832,
+        432
+      ],
+      "id": "09f9a042-22a9-4feb-b4a1-cb0078f5fbda",
+      "name": "Appointments",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "gjlWLmmrZlwbhxiP",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond With Initial Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create an event in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message in Gmail": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many events in Google Calendar": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Appointments": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "9cba0fd1-d388-4e51-b770-1e4bf66f6a44",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "ec65cc4129bdc210fd49d94524bf038922e2d01e9a5074a0ce9d025efd631b93"
+  },
+  "id": "rwAqAQtbAYiAIQJ0",
+  "tags": []
+}
